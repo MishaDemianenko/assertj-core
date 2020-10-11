@@ -338,6 +338,140 @@ public abstract class AbstractCompletableFutureAssert<SELF extends AbstractCompl
   }
 
   /**
+   * Waits if necessary for at most the given time for this future to fail, and then returns exception for further assertions.
+   * <p>
+   * If the future does not throw exception for any reason an assertion error is thrown.
+   * <p>
+   * To get specific assertions for the future exception type use {@link #failsWithin(Duration, InstanceOfAssertFactory)} instead.
+   * <p>
+   * Examples:
+   * <pre><code class='java'> CompletableFuture&lt;String&gt; future = CompletableFuture.runAsync(() -> {
+   *       throw new RuntimeException("Exception");
+   *     });
+   * Duration timeout = Duration.ofMillis(100);
+   *
+   * // assertion succeeds
+   * assertThat(future).failsWithin(timeout)
+   *                   .hasMessage("Exception");
+   *
+   * // fails assuming the future is not done after the given timeout
+   * CompletableFuture&lt;String&gt; future = ... ; // future too long to complete
+   * assertThat(future).failsWithin(timeout);
+   *
+   * // fails as the future is cancelled
+   * CompletableFuture future = new CompletableFuture();
+   * future.cancel(false);
+   * assertThat(future).failsWithin(timeout);</code></pre>
+   *
+   * @param timeout the maximum time to wait
+   * @return a new assertion object on the the future's exception.
+   * @throws AssertionError if the actual {@code CompletableFuture} is {@code null}.
+   * @throws AssertionError if the actual {@code CompletableFuture} does not fails within the given timeout.
+   */
+  public AbstractThrowableAssert<?, ? extends Throwable> failsWithin(Duration timeout) {
+    return internalFailsWithin(timeout);
+  }
+
+  /**
+   * Waits if necessary for at most the given time for this future to fail, and then returns exception for further assertions.
+   * <p>
+   * If the future does not throw exception for any reason an assertion error is thrown.
+   * <p>
+   * To get specific assertions for the future exceptions type use {@link #failsWithin(long, TimeUnit, InstanceOfAssertFactory)} instead.
+   * <p>
+   * Examples:
+   * <pre><code class='java'> CompletableFuture&lt;String&gt; future = CompletableFuture.runAsync(() -> {
+   *       throw new RuntimeException("Exception");
+   *     });
+   *
+   * // assertion succeeds
+   * assertThat(future).failsWithin(100, TimeUnit.MILLISECONDS)
+   *                   hasMessage("Exception");
+   *
+   * // fails assuming the future is not done after the given timeout
+   * CompletableFuture&lt;String&gt; future = ... ; // future too long to complete
+   * assertThat(future).failsWithin(100, TimeUnit.MILLISECONDS);
+   *
+   * // fails as the future is cancelled
+   * CompletableFuture future = new CompletableFuture();
+   * future.cancel(false);
+   * assertThat(future).failsWithin(100, TimeUnit.MILLISECONDS);</code></pre>
+   *
+   * @param timeout the maximum time to wait
+   * @param unit the time unit of the timeout argument
+   * @return a new assertion object on the the future's exception.
+   * @throws AssertionError if the actual {@code CompletableFuture} is {@code null}.
+   * @throws AssertionError if the actual {@code CompletableFuture} does not fails within the given timeout.
+   */
+  public AbstractThrowableAssert<?, ? extends Throwable> failsWithin(long timeout, TimeUnit unit) {
+    return internalFailsWithin(timeout, unit);
+  }
+
+  /**
+   * Waits if necessary for at most the given time for this future to fail, the {@link InstanceOfAssertFactory}
+   * parameter is used to return assertions specific to the the future's exception type.
+   * <p>
+   * If the future does not throw exception for any reason an assertion error is thrown.
+   * <p>
+   * Examples:
+   * <pre><code class='java'> CompletableFuture&lt;String&gt; future = CompletableFuture.runAsync(() -> {
+   *       throw new RuntimeException("Exception");
+   *     });
+   * Duration timeout = Duration.ofMillis(100);
+   *
+   * // assertion succeeds
+   * // using asInstanceOf is recommended to get assertions for the future result's type
+   * assertThat(future).failsWithin(timeout, InstanceOfAssertFactories.THROWABLE)
+   *                   .hasMessage("Exception");
+   *
+   * @param timeout the maximum time to wait
+   * @param assertFactory the factory which verifies the type and creates the new {@code Assert}
+   * @return a new narrowed {@link Assert} instance for assertions chaining on the exceptions from the {@link CompletableFuture}
+   * @throws AssertionError if the actual {@code CompletableFuture} is {@code null}.
+   * @throws IllegalStateException if the actual {@code CompletableFuture} does not fails within the given timeout.
+   */
+  public AbstractThrowableAssert<?, ? extends Throwable> failsWithin(Duration timeout,
+                                                                     InstanceOfAssertFactory<?, ? extends  AbstractThrowableAssert<?, ? extends Throwable>> assertFactory) {
+    return internalFailsWithin(timeout).asInstanceOf(assertFactory);
+  }
+
+  /**
+   * Waits if necessary for at most the given time for this future to fail, the {@link InstanceOfAssertFactory}
+   * parameter is used to return assertions specific to the the future's exception type.
+   * <p>
+   * If the future does not throw exception for any reason an assertion error is thrown.
+   * <p>
+   * Examples:
+   * <pre><code class='java'> CompletableFuture&lt;String&gt; future = CompletableFuture.runAsync(() -> {
+   *       throw new RuntimeException("Exception");
+   *     });
+   *
+   * // assertion succeeds
+   * // using asInstanceOf is recommended to get assertions for the future result's type
+   * assertThat(future).failsWithin(100, TimeUnit.MILLISECONDS, InstanceOfAssertFactories.THROWABLE)
+   *                   .hasMessage("Exception");
+   *
+   * @param timeout the maximum time to wait
+   * @param unit the time unit of the timeout argument
+   * @param assertFactory the factory which verifies the type and creates the new {@code Assert}
+   * @return a new narrowed {@link Assert} instance for assertions chaining on the exceptions from the {@link CompletableFuture}
+   * @throws AssertionError if the actual {@code CompletableFuture} is {@code null}.
+   * @throws AssertionError if the actual {@code CompletableFuture} does not fails within the given timeout.
+   */
+  public AbstractThrowableAssert<?, ? extends Throwable> failsWithin(long timeout, TimeUnit unit,
+                                                                  InstanceOfAssertFactory<?, ? extends  AbstractThrowableAssert<?, ? extends Throwable>> assertFactory) {
+    return internalFailsWithin(timeout, unit).asInstanceOf(assertFactory);
+  }
+
+  private AbstractThrowableAssert<?, ? extends Throwable> internalFailsWithin(Duration timeout) {
+    return futures.assertFailsWithin(info, actual, timeout);
+  }
+
+  private AbstractThrowableAssert<?, ? extends Throwable> internalFailsWithin(long timeout, TimeUnit unit) {
+    return futures.assertFailsWithin(info, actual, timeout, unit);
+  }
+
+  /**
    * Waits if necessary for at most the given time for this future to complete, and then returns its result for further assertions.
    * <p>
    * If the future's result is not available for any reason an assertion error is thrown.

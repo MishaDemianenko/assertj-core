@@ -57,6 +57,91 @@ class SoftAssertions_future_Test extends BaseAssertionsTest {
   }
 
   @Test
+  void should_not_collect_AssertionError_from_CompletableFuture_failsWithin() {
+    // GIVEN
+    CompletableFuture<String> future = new CompletableFuture<>();
+    future.cancel(false);
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.assertThat(future).failsWithin(10, MILLISECONDS));
+    // THEN
+    assertThat(softly.errorsCollected()).isEmpty();
+    assertThat(assertionError).hasMessageContaining("Cancelled");
+  }
+
+  @Test
+  void should_not_collect_AssertionError_from_CompletableFuture_failsWithin_asString() {
+    // GIVEN
+    CompletableFuture<String> future = new CompletableFuture<>();
+    future.cancel(false);
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.assertThat(future).failsWithin(10, MILLISECONDS,
+      as(THROWABLE)));
+    // THEN
+    assertThat(softly.errorsCollected()).isEmpty();
+    assertThat(assertionError).hasMessageContaining("Cancelled");
+  }
+
+  @Test
+  void should_not_collect_AssertionError_from_CompletableFuture_failsWithin_Duration() {
+    // GIVEN
+    CompletableFuture<String> future = new CompletableFuture<>();
+    future.cancel(false);
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.assertThat(future).failsWithin(TEN_MILLIS));
+    // THEN
+    assertThat(softly.errorsCollected()).isEmpty();
+    assertThat(assertionError).hasMessageContaining("Cancelled");
+  }
+
+    @Test
+  void should_not_collect_AssertionError_from_Future_failsWithin() {
+    // GIVEN
+    Future<String> future = new CompletableFuture<>();
+    future.cancel(false);
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.assertThat(future).failsWithin(10, HOURS));
+    // THEN
+    assertThat(softly.errorsCollected()).isEmpty();
+    assertThat(assertionError).hasMessageContaining("Cancelled");
+  }
+
+  @Test
+  void should_not_collect_AssertionError_from_Future_succeedsWithin_asThrowable() {
+    // GIVEN
+    Future<String> future = new CompletableFuture<>();
+    future.cancel(false);
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.assertThat(future).failsWithin(10, HOURS, as(THROWABLE)));
+    // THEN
+    assertThat(softly.errorsCollected()).isEmpty();
+    assertThat(assertionError).hasMessageContaining("Cancelled");
+  }
+
+  @Test
+  void should_not_collect_AssertionError_from_Future_failsWithin_Duration() {
+    // GIVEN
+    Future<String> future = new CompletableFuture<>();
+    future.cancel(false);
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.assertThat(future).failsWithin(TEN_MILLIS));
+    // THEN
+    assertThat(softly.errorsCollected()).isEmpty();
+    assertThat(assertionError).hasMessageContaining("Cancelled");
+  }
+
+  @Test
+  void should_not_collect_AssertionError_from_Future_failsWithin_Duration_asThrowable() {
+    // GIVEN
+    Future<String> future = new CompletableFuture<>();
+    future.cancel(false);
+    // WHEN
+    AssertionError assertionError = expectAssertionError(() -> softly.assertThat(future).failsWithin(TEN_MILLIS, as(THROWABLE)));
+    // THEN
+    assertThat(softly.errorsCollected()).isEmpty();
+    assertThat(assertionError).hasMessageContaining("Cancelled");
+  }
+
+  @Test
   void should_not_collect_AssertionError_from_CompletableFuture_succeedsWithin() {
     // GIVEN
     CompletableFuture<String> future = new CompletableFuture<>();

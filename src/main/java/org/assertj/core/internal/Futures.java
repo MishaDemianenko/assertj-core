@@ -12,19 +12,18 @@
  */
 package org.assertj.core.internal;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.error.future.ShouldBeCancelled.shouldBeCancelled;
 import static org.assertj.core.error.future.ShouldBeCompletedWithin.shouldBeCompletedWithin;
 import static org.assertj.core.error.future.ShouldBeDone.shouldBeDone;
+import static org.assertj.core.error.future.ShouldBeFailedWithin.shouldBeFailed;
 import static org.assertj.core.error.future.ShouldNotBeCancelled.shouldNotBeCancelled;
 import static org.assertj.core.error.future.ShouldNotBeDone.shouldNotBeDone;
 
 import java.time.Duration;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
+import org.assertj.core.api.AbstractThrowableAssert;
 import org.assertj.core.api.AssertionInfo;
 import org.assertj.core.util.VisibleForTesting;
 
@@ -108,6 +107,30 @@ public class Futures {
       return actual.get(timeout.toNanos(), TimeUnit.NANOSECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
       throw failures.failure(info, shouldBeCompletedWithin(actual, timeout, e));
+    }
+  }
+
+  public <RESULT> AbstractThrowableAssert<?, ? extends Throwable> assertFailsWithin(AssertionInfo info, Future<RESULT> actual, Duration timeout) {
+    assertNotNull(info, actual);
+    try {
+      actual.get(timeout.toNanos(), TimeUnit.NANOSECONDS);
+      throw failures.failure(info, shouldBeFailed(actual));
+    } catch (ExecutionException | CompletionException e) {
+      return assertThat(e.getCause());
+    } catch (InterruptedException | TimeoutException | CancellationException notExpected) {
+      throw failures.failure(info, shouldBeFailed(actual, timeout, notExpected));
+    }
+  }
+
+  public <RESULT> AbstractThrowableAssert<?, ? extends Throwable> assertFailsWithin(AssertionInfo info, Future<RESULT> actual, long timeout, TimeUnit unit) {
+    assertNotNull(info, actual);
+    try {
+      actual.get(timeout, unit);
+      throw failures.failure(info, shouldBeFailed(actual));
+    } catch (ExecutionException | CompletionException e) {
+      return assertThat(e.getCause());
+    } catch (InterruptedException | TimeoutException | CancellationException notExpected) {
+      throw failures.failure(info, shouldBeFailed(actual, timeout, unit, notExpected));
     }
   }
 

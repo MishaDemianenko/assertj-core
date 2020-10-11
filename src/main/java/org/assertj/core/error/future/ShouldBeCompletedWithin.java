@@ -12,11 +12,11 @@
  */
 package org.assertj.core.error.future;
 
+import static org.assertj.core.error.future.TimeUnitConversionUtils.toChronoUnit;
 import static org.assertj.core.util.Strings.escapePercent;
 import static org.assertj.core.util.Throwables.getStackTrace;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -56,27 +56,4 @@ public class ShouldBeCompletedWithin extends BasicErrorMessageFactory {
     // ChronoUnit toString looks better than TimeUnit
     super(SHOULD_BE_COMPLETED_WITHIN + escapePercent(getStackTrace(exception)), actual, timeout, toChronoUnit(timeUnit));
   }
-
-  // copied from java 9 code
-  private static ChronoUnit toChronoUnit(TimeUnit timeUnit) {
-    switch (timeUnit) {
-    case NANOSECONDS:
-      return ChronoUnit.NANOS;
-    case MICROSECONDS:
-      return ChronoUnit.MICROS;
-    case MILLISECONDS:
-      return ChronoUnit.MILLIS;
-    case SECONDS:
-      return ChronoUnit.SECONDS;
-    case MINUTES:
-      return ChronoUnit.MINUTES;
-    case HOURS:
-      return ChronoUnit.HOURS;
-    case DAYS:
-      return ChronoUnit.DAYS;
-    default:
-      throw new AssertionError();
-    }
-  }
-
 }
